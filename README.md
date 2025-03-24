@@ -75,5 +75,8 @@ O código está organizado de maneira modular para facilitar a manutenção e a 
 3. Execute o script:
     python coleta_dados.py
 
-## 6. Licença
+## 6. Créditos
+Todas as informações do código base utilizado está no GitHub com a seguinte URL --> https://github.com/guilherme-hu/Projeto-CompSoc/tree/main.
+
+## 7. Licença
 Este projeto é público e não possui uma licença específica.
