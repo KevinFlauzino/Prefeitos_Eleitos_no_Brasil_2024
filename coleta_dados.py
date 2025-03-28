@@ -86,11 +86,15 @@ i = 0
 j = 0
 k = 0
 
-# Definir o diretório para salvar os arquivos
-output_dir = r"F:\ZZZZ\Projeto_Diniz_Candidaturas\Resultados"
+#----------------------------------------------- Definindo caminhos e pastas (Início)
+# Obtém o diretório onde o script está localizado
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
+# Concatena o caminho com a pasta "Resultados"
+output_dir = os.path.join(script_dir, "Resultados")
 #Auxiliar para corrigir erro 504 de URL
 ultima_url = None
+#----------------------------------------------- Definindo caminhos e pastas (Fim)
 #----------------------------------------------- Setando Variáveis Auxiliares (Fim)
 
 #----------------------------------------------- Funções (Início)
