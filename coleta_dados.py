@@ -12,6 +12,9 @@ import pandas as pd
 from unidecode import unidecode
 from selenium.common.exceptions import StaleElementReferenceException
 import threading
+import difflib
+from screeninfo import get_monitors
+
 ###---------------------------------------------------------------
 ###---------------------------------------------------------------
 ###---------------------------------------------------------------
@@ -64,19 +67,13 @@ for_rio_grande_do_sul = 497
 for_santa_catarina = 295
 estados_sul = [for_parana, for_rio_grande_do_sul, for_santa_catarina]
 
-'''
-# Lista de frases-chave
-keywords = ["Moeda", "Renda básica", "Renda mínima", "Renda cidadã", "Transferência de renda", "Economia Solidária", "Gira renda", "Vouncher"]
-keywords2 = []
-'''
-
 # Lista de frases-chave
 keywords = ["moeda","moedas" ,"moeda social", "moedas sociais", "moeda local", "moedas locais", "moeda municipal", "moedas municipais", "moeda comunitaria", "moedas comunitarias",
-            "banco comunitario", "bancos comunitarios", "banco social", "bancos sociais", "banco popular", "bancos populares" ]
-keywords2 = ["renda complementar", "renda minima", "renda basica", "renda social", "economia solidaria", "renda municipal", "renda comunitaria",
-            "transferencia de renda", "distribuicao de renda", "complementacao de renda", "transferir renda", "distribuir renda", "complementar renda",
-            "rendas complementares", "rendas minimas", "rendas basicas", "rendas sociais", "economias solidarias", "rendas municipais", "rendas comunitarias",
-            "transferencias de renda", "distribuicoes de renda", "complementacoes de renda", "transferir rendas", "distribuir rendas", "complementar rendas"]
+            "banco comunitario", "bancos comunitarios", "banco social", "bancos sociais", "banco popular", "bancos populares", "renda complementar", "renda minima", "renda basica",
+            "renda social", "economia solidaria", "renda municipal", "renda comunitaria", "transferencia de renda", "distribuicao de renda", "complementacao de renda",
+            "transferir renda", "distribuir renda", "complementar renda", "rendas complementares", "rendas minimas", "rendas basicas", "rendas sociais",
+            "economias solidarias", "rendas municipais", "rendas comunitarias","transferencias de renda", "distribuicoes de renda", "complementacoes de renda",
+            "transferir rendas", "distribuir rendas", "complementar rendas"]
 
 # Lista para armazenar os resultados
 results = []
@@ -98,6 +95,41 @@ ultima_url = None
 #----------------------------------------------- Setando Variáveis Auxiliares (Fim)
 
 #----------------------------------------------- Funções (Início)
+def obter_resolucao_tela(): # Pega a resolução da tela do dispositivo    
+    monitor = get_monitors()[0]  # Pegando o primeiro monitor
+    return monitor.width, monitor.height
+
+def ajustar_tamanho_janela_chrome(driver):
+    # Resolução da tela de 23.8" (Full HD comum)
+    resolucao_238 = (1920, 1080)
+
+    # Obter a resolução atual da tela
+    resolucao_atual = obter_resolucao_tela()
+    largura_atual, altura_atual = resolucao_atual
+    largura_238, altura_238 = resolucao_238
+
+    # Calcular as proporções entre a resolução atual e a de 23.8"
+    escala_largura = largura_atual / largura_238
+    escala_altura = altura_atual / altura_238
+
+    # Ajustar o tamanho da janela com base na proporção
+    nova_largura = int(largura_238 * escala_largura)
+    nova_altura = int(altura_238 * escala_altura)
+
+    driver.set_window_size(nova_largura, nova_altura)  # Ajusta o tamanho da janela
+
+    return driver
+
+def similaridade_entre_strings(str1, str2): # Calcula a similaridade entre duas strings (percentual)    
+    seq = difflib.SequenceMatcher(None, str1, str2)
+    return seq.ratio()  # Retorna um valor entre0 e 1
+
+def deve_adicionar_trecho(trechos_armazenados, novo_trecho): # Comparar o novo trecho com os existentes  
+    for trecho in trechos_armazenados:        
+        if similaridade_entre_strings(novo_trecho, trecho) > 0.5:  # 50% de similaridade
+            return False  # O trecho é similar o suficiente, não adicionar    
+    return True  # O novo trecho é distinto o suficiente para ser adicionado
+
 def registrar_url(url): #Registra a última URL acessada    
     global ultima_url
     ultima_url = url
@@ -227,6 +259,7 @@ prefs = {
 
 chrome_options.add_experimental_option("prefs", prefs)
 driver = webdriver.Chrome(options=chrome_options)
+driver = ajustar_tamanho_janela_chrome(driver) #Ajusta o tamanho do chrome para o tamanho da tela do dispositivo
 
 # Inicia o monitoramento em segundo plano
 thread_504 = threading.Thread(target=monitorar_url, args=(driver, i, j, k,), daemon=True)
@@ -262,25 +295,36 @@ while True:
     )
     eleicoes_municipais_link.click()
 
-    # Selecionar Brasil e Região
-    elemento_seletor = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, ".row-cols-lg-6 > div:nth-child(1)"))
-    )
-    elemento_seletor.click()
+    try:    # Selecionar Brasil e Região
+        elemento_seletor = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, ".row-cols-lg-6 > div:nth-child(1)"))
+        )
+        elemento_seletor.click()
+    except:
+        try:
+            time.sleep(1)
+            driver.execute_script("window.scrollBy(0, 400);")  # Rolar para baixo
+            time.sleep(1)            
+            elemento_seletor = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, ".row-cols-lg-6 > div:nth-child(1)"))
+            )
+            elemento_seletor.click()
+        except:
+            print("Erro ao clicar no elemento Brasil e Região.")
+
 
     time.sleep(1)
     #----------------------------------------------- Abrindo site (Fim)
 
     #----------------------------------------------- Selecionando Região (Início)
-    '''
-    #---- APAGAR(Início)
+    
+    #---- Selecionar específico (Início)
     #For substituto, caso queira uma quantidade diferente
-    for p in range(3, 4):
-        i = 3    
-    #---- APAGAR(Fim)
-    '''
+    for p in range(0, 1):
+        i = 6 #3=norte, 4=nordeste, 5=centro-oeste, 6=sudeste, 7=sul
+    #---- Selecionar específico (Fim)    
 
-    for i in range(3, 7): #Inicia em 3 pois é o primeiro na lista suspensa do site "Norte"    
+    #for i in range(3, 7): #Inicia em 3 pois é o primeiro na lista suspensa do site "Norte"    
                 
         #Abrir bandeja de seleção
         regiao_select = WebDriverWait(driver, 10).until(
@@ -318,15 +362,13 @@ while True:
 
         #----------------------------------------------- Selecionando Estado (Início)
 
-        '''
-        #---- APAGAR(Início)
+        #---- Selecionar específico (Início)
         #For substituto, caso queira uma quantidade diferente
-        for j in range ((for_start+2), (for_end)):
-            j = (for_start + 3)            
-        #---- APAGAR(Fim)        
-        '''
+        for q in range(0, 1):
+            j = for_start+3
+        #---- Selecionar específico (Fim)
 
-        for j in range (for_start, for_end): 
+        #for j in range (for_start, for_end): 
             driver.refresh()
             time.sleep(1)
             
@@ -364,10 +406,10 @@ while True:
             # Iterar através dos municípios
             municipio_end = j-for_start 
             
-            #---- APAGAR(Início)
+            #---- Selecionar específico (Início)
             #For substituto, caso queira uma quantidade diferente
-            for k in range(2, ((estados_for[municipio_end]) + 2)):  
-            #---- APAGAR(Fim) 
+            for k in range(488, ((estados_for[municipio_end]) + 2)): #Sempre começa no 2
+            #---- Selecionar específico (Fim)
             
             #for k in range(2, ((estados_for[municipio_end]) + 2)):  # Ajustar o número de municípios conforme necessário -> 2, 94 (Ex: RJ tem 92 municípios, começamos no 2 e o range vai até 2+quantidade_municípios)
                 
@@ -456,7 +498,6 @@ while True:
                     except:
                         monitorar_comando(results, "s")                   
                     
-
                     try:
                         #------ Baixando arquivo (Início) 
                         pdf = WebDriverWait(driver, 15).until(
@@ -471,8 +512,7 @@ while True:
                         pdf_files = [f for f in os.listdir(download_dir) if f.endswith('.pdf')]
                     
                         # Converter lista de palavras-chave para minúsculas
-                        keywords_lower = [kw.lower() for kw in keywords]
-                        keywords2_lower = [kw.lower() for kw in keywords2]
+                        keywords_lower = [kw.lower() for kw in keywords]                        
                     
                         for pdf_file in pdf_files:                        
                             pdf_path = os.path.join(download_dir, pdf_file)  
@@ -496,7 +536,7 @@ while True:
                                 encontrou_palavra_chave = False  # Flag para verificar se encontrou alguma palavra-chave
                     
                                 # Procurar todas as ocorrências das palavras-chave (sem diferenciar maiúsculas/minúsculas)
-                                for kw in keywords_lower + keywords2_lower:
+                                for kw in keywords_lower:
                                     matches = list(re.finditer(rf'\b{kw}\b', text, re.IGNORECASE))  # Encontrar todas as ocorrências
                     
                                     for match in matches:
@@ -504,7 +544,14 @@ while True:
                                         # Definir trecho e quantidade de caracteres
                                         start = max(0, match.start() - 450)
                                         end = min(len(text), match.end() + 450)
-                                        trecho.append(formatar_trecho(text[start:end]))
+                                        novo_trecho = formatar_trecho(text[start:end])
+                                        ########TESTE
+                                        if deve_adicionar_trecho(trecho, novo_trecho):
+                                            trecho.append(novo_trecho)
+                                            print("Trecho adicionado!")
+                                        else:
+                                            print("Trecho similar encontrado, não será adicionado.")
+                                        ########TESTE                                       
                     
                                 # Adicionar os trechos encontrados apenas se houver pelo menos um, senão adicionar ""
                                 trecho_literal = "".join(trecho) if encontrou_palavra_chave else ""
@@ -522,8 +569,7 @@ while True:
                                     "Municipio": municipio_cargo,
                                     "Partido": partido,
                                     # "Situacao": situacao,  
-                                    "Moeda Social": ", ".join([phrase for phrase in keywords_lower if phrase in text]),
-                                    "Palavras chaves Amplas": ", ".join([phrase for phrase in keywords2_lower if phrase in text]),
+                                    "Palavras-Chave": ", ".join([phrase for phrase in keywords_lower if phrase in text]),                                    
                                     "Texto Literal": trecho_literal
                                 })
 
