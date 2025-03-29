@@ -78,5 +78,8 @@ O código está organizado de maneira modular para facilitar a manutenção e a 
 ## 6. Créditos
 Todas as informações do código base utilizado está no GitHub com a seguinte URL --> https://github.com/guilherme-hu/Projeto-CompSoc/tree/main.
 
-## 7. Licença
+## 7. Observações
+Readme referente ao commit denominado "Dando os créditos do código base"
+
+## 8. Licença
 Este projeto é público e não possui uma licença específica.
