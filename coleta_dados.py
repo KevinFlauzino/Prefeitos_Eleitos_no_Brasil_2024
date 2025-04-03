@@ -68,12 +68,20 @@ for_santa_catarina = 295
 estados_sul = [for_parana, for_rio_grande_do_sul, for_santa_catarina]
 
 # Lista de frases-chave
-keywords = ["moeda","moedas" ,"moeda social", "moedas sociais", "moeda local", "moedas locais", "moeda municipal", "moedas municipais", "moeda comunitaria", "moedas comunitarias",
-            "banco comunitario", "bancos comunitarios", "banco social", "bancos sociais", "banco popular", "bancos populares", "renda complementar", "renda minima", "renda basica",
-            "renda social", "economia solidaria", "renda municipal", "renda comunitaria", "transferencia de renda", "distribuicao de renda", "complementacao de renda",
-            "transferir renda", "distribuir renda", "complementar renda", "rendas complementares", "rendas minimas", "rendas basicas", "rendas sociais",
-            "economias solidarias", "rendas municipais", "rendas comunitarias","transferencias de renda", "distribuicoes de renda", "complementacoes de renda",
-            "transferir rendas", "distribuir rendas", "complementar rendas"]
+keywords = [
+    "mudança climática", "alteração climática", "transformação climática",
+    "adaptação climática", "ajuste climático", "resposta climática",
+    "aquecimento global", "elevação da temperatura global", "mudança de temperatura",
+    "crise climática", "emergência climática", "colapso climático",
+    "variabilidade climática", "flutuação climática", "instabilidade climática",
+    "mitigação climática", "redução de impactos climáticos", "contenção climática",
+    "resiliência climática", "sustentabilidade climática", "fortalecimento climático",
+    "descarbonização", "redução de emissões", "eliminação do carbono",
+    "efeito estufa", "gases de efeito estufa", "aquecimento atmosférico",
+    "neutralidade de carbono", "carbono neutro", "balanço de carbono zero",
+    "pegada de carbono", "emissão de carbono", "impacto de carbono"
+]
+
 
 # Lista para armazenar os resultados
 results = []
@@ -173,21 +181,31 @@ def verificar_eleitos(driver): #Indica apenas o candidato eleito, se ele existir
     else:
         return [100] 
 
-def formatar_trecho(trecho): #Formata o trecho inserido
+import re
+
+def formatar_trecho(trecho):
     if not isinstance(trecho, str):
         raise ValueError("O input deve ser uma string.")
 
-    trecho = trecho.strip()
-    trecho = re.sub(r'\s+', ' ', trecho)  
-    trecho = re.sub(r'[^a-zA-ZÀ-ÖØ-öø-ÿ0-9.,;!?()"\' ]', '', trecho)  
-
-    match_inicio = re.search(r'[A-ZÁ-Ú].*', trecho, re.DOTALL)
+    trecho_original = trecho.strip()  # Armazena o trecho original para comparação
+    
+    # Encontrar o primeiro '.' ou ';' e iniciar o trecho logo após ele
+    match_inicio = re.search(r'[.;]\s*(.*)', trecho)
     if match_inicio:
-        trecho = match_inicio.group(0)
+        trecho = match_inicio.group(1).strip()
 
-    ultima_posicao = trecho.rfind('.')
+    # Encontrar a última ocorrência de '.' ou ';' e cortar o trecho até ali
+    ultima_posicao = max(trecho.rfind('.'), trecho.rfind(';'))
     if ultima_posicao != -1:
         trecho = trecho[:ultima_posicao + 1]
+
+    # Se após a formatação o trecho ficou com menos de 200 caracteres, retorna o original
+    if len(trecho) < 200:
+        return trecho_original.strip()
+
+    # Agora que já ajustamos o início e o fim, podemos limpar caracteres indesejados
+    trecho = re.sub(r'\s+', ' ', trecho)  # Remove espaços extras
+    trecho = re.sub(r'[^a-zA-ZÀ-ÖØ-öø-ÿ0-9.,;!?()"\' ]', '', trecho)  # Remove caracteres indesejados
 
     return trecho.strip()
 
@@ -317,15 +335,14 @@ while True:
     #----------------------------------------------- Abrindo site (Fim)
 
     #----------------------------------------------- Selecionando Região (Início)
-    
+    '''
     #---- Selecionar específico (Início)
     #For substituto, caso queira uma quantidade diferente
     for p in range(0, 1):
-        i = 6 #3=norte, 4=nordeste, 5=centro-oeste, 6=sudeste, 7=sul
+        i = 4 #3=norte, 4=nordeste, 5=centro-oeste, 6=sudeste, 7=sul
     #---- Selecionar específico (Fim)    
-
-    #for i in range(3, 7): #Inicia em 3 pois é o primeiro na lista suspensa do site "Norte"    
-                
+    '''
+    for i in range(3, 7): #Inicia em 3 pois é o primeiro na lista suspensa do site "Norte" 
         #Abrir bandeja de seleção
         regiao_select = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, "#regiao"))
@@ -361,14 +378,14 @@ while True:
         #----------------------------------------------- Setando variáveis auxiliares (Fim)
 
         #----------------------------------------------- Selecionando Estado (Início)
-
+        '''
         #---- Selecionar específico (Início)
         #For substituto, caso queira uma quantidade diferente
         for q in range(0, 1):
-            j = for_start+3
+            j = for_start+1
         #---- Selecionar específico (Fim)
-
-        #for j in range (for_start, for_end): 
+        '''
+        for j in range (for_start, for_end): 
             driver.refresh()
             time.sleep(1)
             
@@ -406,15 +423,13 @@ while True:
             # Iterar através dos municípios
             municipio_end = j-for_start 
             
+            '''
             #---- Selecionar específico (Início)
             #For substituto, caso queira uma quantidade diferente
-            for k in range(488, ((estados_for[municipio_end]) + 2)): #Sempre começa no 2
+            for k in range(294, ((estados_for[municipio_end]) + 2)): #Sempre começa no 2
             #---- Selecionar específico (Fim)
-            
-            #for k in range(2, ((estados_for[municipio_end]) + 2)):  # Ajustar o número de municípios conforme necessário -> 2, 94 (Ex: RJ tem 92 municípios, começamos no 2 e o range vai até 2+quantidade_municípios)
-                
-             
-
+            '''
+            for k in range(2, ((estados_for[municipio_end]) + 2)):  # Ajustar o número de municípios conforme necessário -> 2, 94 (Ex: RJ tem 92 municípios, começamos no 2 e o range vai até 2+quantidade_municípios)
                 try:
                     limpar_pasta()
                     municipio = WebDriverWait(driver, 20).until(
@@ -542,16 +557,14 @@ while True:
                                     for match in matches:
                                         encontrou_palavra_chave = True  # Marca que encontrou pelo menos uma palavra-chave
                                         # Definir trecho e quantidade de caracteres
-                                        start = max(0, match.start() - 450)
-                                        end = min(len(text), match.end() + 450)
-                                        novo_trecho = formatar_trecho(text[start:end])
-                                        ########TESTE
+                                        start = max(0, match.start() - 500)
+                                        end = min(len(text), match.end() + 500)
+                                        novo_trecho = formatar_trecho(text[start:end])                                     
                                         if deve_adicionar_trecho(trecho, novo_trecho):
                                             trecho.append(novo_trecho)
                                             print("Trecho adicionado!")
                                         else:
-                                            print("Trecho similar encontrado, não será adicionado.")
-                                        ########TESTE                                       
+                                            print("Trecho similar encontrado, não será adicionado.")                                                                            
                     
                                 # Adicionar os trechos encontrados apenas se houver pelo menos um, senão adicionar ""
                                 trecho_literal = "".join(trecho) if encontrou_palavra_chave else ""
