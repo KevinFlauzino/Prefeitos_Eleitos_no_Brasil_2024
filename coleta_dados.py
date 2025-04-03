@@ -82,7 +82,6 @@ keywords = [
     "pegada de carbono", "emissão de carbono", "impacto de carbono"
 ]
 
-
 # Lista para armazenar os resultados
 results = []
 
