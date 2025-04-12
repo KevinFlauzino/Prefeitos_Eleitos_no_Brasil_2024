@@ -14,6 +14,11 @@ from selenium.common.exceptions import StaleElementReferenceException
 import threading
 import difflib
 from screeninfo import get_monitors
+import tkinter as tk
+from tkinter import ttk, messagebox
+from threading import Thread
+from tkinter import Tk, Label, Button, Entry, Checkbutton, IntVar, BooleanVar, StringVar, ttk
+
 
 ###---------------------------------------------------------------
 ###---------------------------------------------------------------
@@ -33,10 +38,10 @@ for_acre = 22
 for_amazonas = 62
 for_amapa = 16
 for_para = 144
-for_randonia = 52
+for_rondonia = 52
 for_roraima = 15
 for_tocantins = 139
-estados_norte = [for_acre, for_amazonas, for_amapa, for_para, for_randonia, for_roraima, for_tocantins]
+estados_norte = [for_acre, for_amazonas, for_amapa, for_para, for_rondonia, for_roraima, for_tocantins]
 
 for_alagoas = 102
 for_bahia = 417
@@ -81,6 +86,17 @@ keywords = [
     "neutralidade de carbono", "carbono neutro", "balanço de carbono zero",
     "pegada de carbono", "emissão de carbono", "impacto de carbono"
 ]
+
+estados = {
+    "AC": for_acre, "AL": for_alagoas, "AM": for_amazonas, "AP": for_amapa,
+    "BA": for_bahia, "CE": for_ceara, "DF": 1, "ES": for_espiritosanto,
+    "GO": for_goias, "MA": for_maranhao, "MG": for_minasa_gerais, "MS": for_mato_grosso_do_sul,
+    "MT": for_mato_grosso, "PA": for_para, "PB": for_paraiba, "PE": for_pernambuco,
+    "PI": for_piaui, "PR": for_parana, "RJ": for_rio_de_janeiro, "RN": for_rio_grande_do_norte,
+    "RO": for_rondonia, "RR": for_roraima, "RS": for_rio_grande_do_sul,
+    "SC": for_santa_catarina, "SE": for_sergipe, "SP": for_sao_paulo, "TO": for_tocantins
+}
+
 
 # Lista para armazenar os resultados
 results = []
@@ -407,6 +423,37 @@ def obter_partido(driver):
         print(f"Erro ao obter partido: {e}")
         return "Partido não encontrado"
     
+def toggle_municipios():
+    if varrer_todos_var.get():
+        inicio_entry.config(state="disabled")
+        fim_entry.config(state="disabled")
+    else:
+        inicio_entry.config(state="normal")
+        fim_entry.config(state="normal")
+
+def atualizar_progresso(atual, total):
+    progresso["maximum"] = total
+    progresso["value"] = atual
+    status_label.config(text=f"{atual} de {total} candidatos varridos")
+
+def iniciar():
+    # Obter o intervalo de varreduras antes de salvar
+    intervalo_varredura = varreduras_intervalo_var.get()
+
+    # Obter os outros dados necessários da interface
+    estados_selecionados = {e: v.get() for e, v in estado_vars.items()}
+    inicio = inicio_var.get()
+    fim = fim_var.get()
+    salvar = salvar_auto_var.get()
+
+    if not any(estados_selecionados.values()):
+        messagebox.showwarning("Seleção de estados", "Selecione pelo menos um estado.")
+        return
+
+    # Passar o intervalo de varreduras para a função main
+    main(estados_selecionados, inicio, fim, salvar, intervalo_varredura)
+
+
 def extrair_proposta_pdf(driver, download_dir, keywords_lower):
     try:
         # Tentar clicar no botão do PDF
@@ -474,17 +521,27 @@ def extrair_proposta_pdf(driver, download_dir, keywords_lower):
     else:
         return ""
 
-def main():
+def main(estados_selecionados, inicio, fim, salvar, intervalo_varredura):
     driver = configurar_chrome()
     abrir_site(driver)
 
     contador_candidatos = 0  # Contador de candidatos varridos
+    results = []
+    total_candidatos = (fim - inicio + 1) * len(estados_selecionados)  # Estimativa de candidatos para mostrar progresso
+    progresso_atual = 0
 
-    for i in range(3, 7):
-        selecionar_regiao(driver, i)
+    for i, estado_selecionado in enumerate(estados_selecionados):
+        if not estado_selecionado:
+            continue  # Pular estados não selecionados
+
+        selecionar_regiao(driver, i)  # Seleciona a região com base no índice
+
         for_reg, estados_for = obter_dados_regiao(i)
 
         for j in range(for_reg, for_reg * 2):
+            if j < inicio or j > fim:
+                continue  # Ignorar municípios fora do intervalo configurado
+
             selecionar_estado(driver, j)
             clicar_candidatura(driver, i, j, for_reg)
 
@@ -520,18 +577,110 @@ def main():
                     })
 
                     contador_candidatos += 1
+                    progresso_atual += 1
+                    atualizar_progresso(progresso_atual, total_candidatos)
 
                     print("\n---------------------")
                     print(f"Último candidato ---> Região={i-2}/5, Estados={j-for_reg+1}, Municípios={k-1}")
                     print(f"Contador de candidatos: {contador_candidatos}")
                     print("---------------------")
 
-                    if contador_candidatos % 15 == 0:
+                    # Salvar a cada X candidatos, conforme intervalo configurado
+                    if salvar and contador_candidatos % intervalo_varredura == 0:
                         salvar_resultados(results, output_dir)
 
-    finalizar_driver(driver, download_dir)
+    # Salvar resultados ao final
     salvar_resultados(results, output_dir)
+    finalizar_driver(driver, download_dir)
     exibir_tempo_execucao(inicio_time)
 #----------------------------------------------- Funções (Fim) 
 
-main() # Executa a função principal
+# Criar janela principal
+janela = tk.Tk()
+janela.title("Varredura de Prefeitos 2024")
+janela.geometry("700x500")
+
+# Título
+titulo = tk.Label(janela, text="Varredura de Prefeitos Eleitos - 2024", font=("Arial", 16))
+titulo.pack(pady=10)
+
+# Frame principal
+frame = tk.Frame(janela)
+frame.pack()
+
+# Frame dos estados com scroll
+frame_estados = tk.LabelFrame(frame, text="Estados para varredura", padx=10, pady=10)
+frame_estados.grid(row=0, column=0, padx=10, pady=10)
+
+canvas = tk.Canvas(frame_estados, width=200, height=200)
+scrollbar = tk.Scrollbar(frame_estados, orient="vertical", command=canvas.yview)
+scrollable_frame = tk.Frame(canvas)
+
+scrollable_frame.bind(
+    "<Configure>",
+    lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+)
+
+canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+canvas.configure(yscrollcommand=scrollbar.set)
+
+estado_vars = {}
+for estado in estados:
+    var = BooleanVar()
+    tk.Checkbutton(scrollable_frame, text=estado, variable=var).pack(anchor="w")
+    estado_vars[estado] = var
+
+canvas.pack(side="left")
+scrollbar.pack(side="right", fill="y")
+
+# Frame para controle de municípios
+frame_municipios = tk.LabelFrame(frame, text="Intervalo de municípios", padx=10, pady=10)
+frame_municipios.grid(row=0, column=1, padx=10, pady=10, sticky="n")
+
+inicio_label = tk.Label(frame_municipios, text="Início:")
+inicio_label.grid(row=0, column=0)
+inicio_var = IntVar(value=1)
+inicio_entry = tk.Entry(frame_municipios, textvariable=inicio_var, width=5)
+inicio_entry.grid(row=0, column=1)
+
+fim_label = tk.Label(frame_municipios, text="Fim:")
+fim_label.grid(row=1, column=0)
+fim_var = IntVar(value=10)
+fim_entry = tk.Entry(frame_municipios, textvariable=fim_var, width=5)
+fim_entry.grid(row=1, column=1)
+
+# Checkbox para "Varrer todos os municípios"
+varrer_todos_var = BooleanVar()
+varrer_todos_check = tk.Checkbutton(frame_municipios, text="Varrer todos os municípios", variable=varrer_todos_var, command=toggle_municipios)
+varrer_todos_check.grid(row=2, column=0, columnspan=2, pady=5)
+
+# Checkbox para salvamento automático
+salvar_auto_var = BooleanVar(value=True)
+check_salvar = tk.Checkbutton(frame_municipios, text="Salvar automaticamente", variable=salvar_auto_var)
+check_salvar.grid(row=3, column=0, columnspan=2, pady=10)
+
+# Novo campo para definir a quantidade de varreduras antes de salvar o arquivo
+varreduras_label = tk.Label(frame_municipios, text="De quantos em quantos candidatos varridos salvar o arquivo:")
+varreduras_label.grid(row=4, column=0, columnspan=2, pady=5)
+
+varreduras_intervalo_var = IntVar(value=5)  # Valor inicial do intervalo (pode ser ajustado)
+varreduras_intervalo_entry = tk.Entry(frame_municipios, textvariable=varreduras_intervalo_var, width=5)
+varreduras_intervalo_entry.grid(row=5, column=0, columnspan=2, pady=5)
+
+# Barra de progresso
+progresso = ttk.Progressbar(janela, orient="horizontal", length=600, mode="determinate")
+progresso.pack(pady=20)
+
+status_label = tk.Label(janela, text="Aguardando início da varredura...")
+status_label.pack()
+
+# Botão iniciar
+botao_iniciar = tk.Button(janela, text="Iniciar Varredura", bg="green", fg="white", width=20, command=iniciar)
+botao_iniciar.pack(pady=5)
+
+# Botão sair
+botao_sair = tk.Button(janela, text="Sair", command=janela.quit, bg="red", fg="white", width=20)
+botao_sair.pack(pady=5)
+
+# Iniciar GUI
+janela.mainloop()
