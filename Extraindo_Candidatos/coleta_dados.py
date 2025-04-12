@@ -88,14 +88,25 @@ keywords = [
 ]
 
 estados = {
-    "AC": for_acre, "AL": for_alagoas, "AM": for_amazonas, "AP": for_amapa,
-    "BA": for_bahia, "CE": for_ceara, "DF": 1, "ES": for_espiritosanto,
-    "GO": for_goias, "MA": for_maranhao, "MG": for_minasa_gerais, "MS": for_mato_grosso_do_sul,
-    "MT": for_mato_grosso, "PA": for_para, "PB": for_paraiba, "PE": for_pernambuco,
-    "PI": for_piaui, "PR": for_parana, "RJ": for_rio_de_janeiro, "RN": for_rio_grande_do_norte,
-    "RO": for_rondonia, "RR": for_roraima, "RS": for_rio_grande_do_sul,
-    "SC": for_santa_catarina, "SE": for_sergipe, "SP": for_sao_paulo, "TO": for_tocantins
+    "Acre": for_acre, "Alagoas": for_alagoas, "Amapá": for_amapa, "Amazonas": for_amazonas, 
+    "Bahia": for_bahia, "Ceará": for_ceara, "Espírito Santo": for_espiritosanto, 
+    "Goiás": for_goias, "Maranhão": for_maranhao, "Mato Grosso": for_mato_grosso, 
+    "Mato Grosso do Sul": for_mato_grosso_do_sul, "Minas Gerais": for_minasa_gerais, 
+    "Pará": for_para, "Paraíba": for_paraiba, "Pernambuco": for_pernambuco, "Piauí": for_piaui, 
+    "Paraná": for_parana, "Rio de Janeiro": for_rio_de_janeiro, "Rio Grande do Norte": for_rio_grande_do_norte, 
+    "Rio Grande do Sul": for_rio_grande_do_sul, "Rondônia": for_rondonia, "Roraima": for_roraima, 
+    "Santa Catarina": for_santa_catarina, "São Paulo": for_sao_paulo, "Sergipe": for_sergipe, 
+    "Tocantins": for_tocantins
 }
+
+# Mapeamento de regiões para estados
+regioes = {
+        "Norte": sorted(["Acre", "Amapá", "Amazonas", "Pará", "Rondônia", "Roraima", "Tocantins"]),
+        "Nordeste": sorted(["Alagoas", "Bahia", "Ceará", "Maranhão", "Paraíba", "Pernambuco", "Piauí", "Rio Grande do Norte", "Sergipe"]),
+        "Centro-Oeste": sorted(["Goiás", "Mato Grosso", "Mato Grosso do Sul"]),
+        "Sudeste": sorted(["Espírito Santo", "Minas Gerais", "Rio de Janeiro", "São Paulo"]),
+        "Sul": sorted(["Paraná", "Rio Grande do Sul", "Santa Catarina"])
+    }
 
 
 # Lista para armazenar os resultados
@@ -393,6 +404,31 @@ def formatar_trecho(trecho):
 
     return trecho.strip()
 
+def mostrar_como_usar():
+    janela_como_usar = tk.Toplevel(janela)
+    janela_como_usar.title("Como Usar")
+    texto = (
+        "1. Selecione os estados que deseja varrer.\n"
+        "2. Marque 'Varrer todos os municípios' ou defina o intervalo.\n"
+        "3. Defina a frequência de salvamento automático.\n"
+        "4. Clique em 'Iniciar Varredura'.\n\n"
+        "Os dados serão coletados automaticamente e salvos conforme a configuração."
+    )
+    label = tk.Label(janela_como_usar, text=texto, justify="left", padx=10, pady=10)
+    label.pack()
+
+def mostrar_creditos():
+    janela_creditos = tk.Toplevel(janela)
+    janela_creditos.title("Créditos e Contato")
+    texto = (
+        "Desenvolvido por Kevin.\n"
+        "Contato: kevin@email.com\n\n"
+        "Este programa realiza varredura de dados públicos\n"
+        "sobre prefeitos eleitos no Brasil (2024)."
+    )
+    label = tk.Label(janela_creditos, text=texto, justify="left", padx=10, pady=10)
+    label.pack()
+
 def obter_nome_candidato(driver):
     try:
         elemento = WebDriverWait(driver, 10).until(
@@ -437,22 +473,44 @@ def atualizar_progresso(atual, total):
     status_label.config(text=f"{atual} de {total} candidatos varridos")
 
 def iniciar():
-    # Obter o intervalo de varreduras antes de salvar
-    intervalo_varredura = varreduras_intervalo_var.get()
 
-    # Obter os outros dados necessários da interface
-    estados_selecionados = {e: v.get() for e, v in estado_vars.items()}
-    inicio = inicio_var.get()
-    fim = fim_var.get()
-    salvar = salvar_auto_var.get()
+    # Obter valores da interface
+    salvar_automaticamente = salvar_auto_var.get()
+    varrer_todos = varrer_todos_var.get()
+    intervalo_salvamento = varreduras_intervalo_var.get()
 
-    if not any(estados_selecionados.values()):
-        messagebox.showwarning("Seleção de estados", "Selecione pelo menos um estado.")
+    if varrer_todos:
+        inicio = 1
+        fim = 900
+    else:
+        inicio = inicio_var.get()
+        fim = fim_var.get()
+
+    # Verificar se pelo menos um estado foi selecionado
+    if not any(var.get() for var in estado_vars.values()):
+        status_label.config(text="Selecione ao menos um estado para iniciar a varredura.")
         return
 
-    # Passar o intervalo de varreduras para a função main
-    main(estados_selecionados, inicio, fim, salvar, intervalo_varredura)
+    # Lista de estados selecionados, preservando a ordem desejada
+    estados_selecionados = []
+    for regiao in ["Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul"]:
+        for estado in regioes[regiao]:
+            if estado_vars[estado].get():
+                estados_selecionados.append((estado, regiao))
 
+    print(f"Estados selecionados: {estados_selecionados}")#APAGAR
+    time.sleep(10)#APAGAR
+
+    if not estados_selecionados:
+        status_label.config(text="Nenhum estado foi selecionado.")
+        return
+
+    # Atualizar status da interface
+    status_label.config(text="Iniciando varredura...")
+    janela.update()
+
+    # Chamar função principal
+    main(estados_selecionados, inicio, fim, varrer_todos, salvar_automaticamente, intervalo_salvamento)
 
 def extrair_proposta_pdf(driver, download_dir, keywords_lower):
     try:
@@ -521,50 +579,67 @@ def extrair_proposta_pdf(driver, download_dir, keywords_lower):
     else:
         return ""
 
-def main(estados_selecionados, inicio, fim, salvar, intervalo_varredura):
+def main(estados_selecionados, inicio, fim, varrer_todos, salvar_automaticamente, intervalo_salvamento):
     driver = configurar_chrome()
     abrir_site(driver)
 
-    contador_candidatos = 0  # Contador de candidatos varridos
+    contador_candidatos = 0
     results = []
-    total_candidatos = (fim - inicio + 1) * len(estados_selecionados)  # Estimativa de candidatos para mostrar progresso
+    total_candidatos = (fim - inicio + 1) * len(estados_selecionados)
     progresso_atual = 0
 
-    for i, estado_selecionado in enumerate(estados_selecionados):
-        if not estado_selecionado:
-            continue  # Pular estados não selecionados
+    for estado_nome in estados_selecionados:
+        # Encontrar o estado nas regiões
+        encontrado = False
+        for regiao_nome, estados in regioes.items():
+            if estado_nome in estados:
+                regiao_nome = regiao_nome  # Regiao do estado
+                indice_estado = estados.index(estado_nome)  # Índice do estado dentro da região
+                encontrado = True
+                break
 
-        selecionar_regiao(driver, i)  # Seleciona a região com base no índice
+        if not encontrado:
+            print(f"Erro: Não foi possível encontrar o estado {estado_nome}")
+            continue
 
+        # No lugar de obter o índice da região, utilizamos o regiao_nome diretamente
+        i = regiao_nome  # Agora, `regiao_nome` já contém a informação da região
+        j = indice_estado
+
+        if i is None or j is None:
+            print(f"Erro: não foi possível identificar índices para {estado_nome} ({regiao_nome})")
+            continue
+
+        selecionar_regiao(driver, i)
         for_reg, estados_for = obter_dados_regiao(i)
 
-        for j in range(for_reg, for_reg * 2):
-            if j < inicio or j > fim:
-                continue  # Ignorar municípios fora do intervalo configurado
+        for k in range(for_reg, for_reg * 2):
+            if k != j:
+                continue
 
-            selecionar_estado(driver, j)
-            clicar_candidatura(driver, i, j, for_reg)
+            if k < inicio or k > fim:
+                continue
 
-            for k in range(2, estados_for[j - for_reg] + 2):
-                selecionar_municipio(driver, k)
+            selecionar_estado(driver, k)
+            clicar_candidatura(driver, i, k, for_reg)
+
+            for m in range(2, estados_for[k - for_reg] + 2):
+                selecionar_municipio(driver, m)
                 pesquisar_prefeito(driver)
 
                 if clicar_candidato_eleito(driver):
-                    # Extrair informações antes de acessar proposta
                     candidato_nome = obter_nome_candidato(driver)
                     municipio_cargo = obter_municipio_cargo(driver)
                     partido = obter_partido(driver)
 
-                    # Tenta acessar a proposta
                     acessar_proposta(driver)
 
-                    # Tenta extrair a proposta via PDF
                     proposta = extrair_proposta_pdf(driver, download_dir, keywords_lower)
 
                     if proposta:
                         trecho_literal = proposta
                         palavras_chave = ", ".join([kw for kw in keywords_lower if kw in proposta.lower()])
-                    else:                        
+                    else:
                         trecho_literal = ""
                         palavras_chave = ""
 
@@ -581,15 +656,13 @@ def main(estados_selecionados, inicio, fim, salvar, intervalo_varredura):
                     atualizar_progresso(progresso_atual, total_candidatos)
 
                     print("\n---------------------")
-                    print(f"Último candidato ---> Região={i-2}/5, Estados={j-for_reg+1}, Municípios={k-1}")
+                    print(f"Último candidato ---> Região={i-2}/5, Estado={k-for_reg+1}, Município={m-1}")
                     print(f"Contador de candidatos: {contador_candidatos}")
                     print("---------------------")
 
-                    # Salvar a cada X candidatos, conforme intervalo configurado
                     if salvar and contador_candidatos % intervalo_varredura == 0:
                         salvar_resultados(results, output_dir)
 
-    # Salvar resultados ao final
     salvar_resultados(results, output_dir)
     finalizar_driver(driver, download_dir)
     exibir_tempo_execucao(inicio_time)
@@ -598,7 +671,7 @@ def main(estados_selecionados, inicio, fim, salvar, intervalo_varredura):
 # Criar janela principal
 janela = tk.Tk()
 janela.title("Varredura de Prefeitos 2024")
-janela.geometry("700x500")
+janela.geometry("700x550")  # Aumentei um pouco a altura
 
 # Título
 titulo = tk.Label(janela, text="Varredura de Prefeitos Eleitos - 2024", font=("Arial", 16))
@@ -634,7 +707,7 @@ canvas.pack(side="left")
 scrollbar.pack(side="right", fill="y")
 
 # Frame para controle de municípios
-frame_municipios = tk.LabelFrame(frame, text="Intervalo de municípios", padx=10, pady=10)
+frame_municipios = tk.LabelFrame(frame, text="Intervalo de municípios", padx=10, pady=20)
 frame_municipios.grid(row=0, column=1, padx=10, pady=10, sticky="n")
 
 inicio_label = tk.Label(frame_municipios, text="Início:")
@@ -642,15 +715,17 @@ inicio_label.grid(row=0, column=0)
 inicio_var = IntVar(value=1)
 inicio_entry = tk.Entry(frame_municipios, textvariable=inicio_var, width=5)
 inicio_entry.grid(row=0, column=1)
+inicio_entry.config(state="disabled")
 
 fim_label = tk.Label(frame_municipios, text="Fim:")
 fim_label.grid(row=1, column=0)
 fim_var = IntVar(value=10)
 fim_entry = tk.Entry(frame_municipios, textvariable=fim_var, width=5)
 fim_entry.grid(row=1, column=1)
+fim_entry.config(state="disabled")
 
 # Checkbox para "Varrer todos os municípios"
-varrer_todos_var = BooleanVar()
+varrer_todos_var = BooleanVar(value=True)
 varrer_todos_check = tk.Checkbutton(frame_municipios, text="Varrer todos os municípios", variable=varrer_todos_var, command=toggle_municipios)
 varrer_todos_check.grid(row=2, column=0, columnspan=2, pady=5)
 
@@ -663,7 +738,7 @@ check_salvar.grid(row=3, column=0, columnspan=2, pady=10)
 varreduras_label = tk.Label(frame_municipios, text="De quantos em quantos candidatos varridos salvar o arquivo:")
 varreduras_label.grid(row=4, column=0, columnspan=2, pady=5)
 
-varreduras_intervalo_var = IntVar(value=5)  # Valor inicial do intervalo (pode ser ajustado)
+varreduras_intervalo_var = IntVar(value=5)
 varreduras_intervalo_entry = tk.Entry(frame_municipios, textvariable=varreduras_intervalo_var, width=5)
 varreduras_intervalo_entry.grid(row=5, column=0, columnspan=2, pady=5)
 
@@ -674,13 +749,22 @@ progresso.pack(pady=20)
 status_label = tk.Label(janela, text="Aguardando início da varredura...")
 status_label.pack()
 
-# Botão iniciar
+# Botões
 botao_iniciar = tk.Button(janela, text="Iniciar Varredura", bg="green", fg="white", width=20, command=iniciar)
 botao_iniciar.pack(pady=5)
 
-# Botão sair
 botao_sair = tk.Button(janela, text="Sair", command=janela.quit, bg="red", fg="white", width=20)
 botao_sair.pack(pady=5)
+
+# Novos botões no canto inferior direito
+frame_botoes_info = tk.Frame(janela)
+frame_botoes_info.pack(side="bottom", anchor="se", pady=10, padx=10)
+
+btn_como_usar = tk.Button(frame_botoes_info, text="Como usar", command=mostrar_como_usar)
+btn_como_usar.pack(side="left", padx=5)
+
+btn_creditos = tk.Button(frame_botoes_info, text="Créditos e contato", command=mostrar_creditos)
+btn_creditos.pack(side="left", padx=5)
 
 # Iniciar GUI
 janela.mainloop()
