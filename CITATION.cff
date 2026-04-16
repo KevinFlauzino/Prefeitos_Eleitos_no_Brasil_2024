@@ -1,0 +1,54 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Prefeitos_Eleitos_no_Brasil_2024
+message: >-
+  Se você usar este software, cite-o usando os metadados
+  deste arquivo.
+type: software
+authors:
+  - given-names: Kevin
+    family-names: Flauzino
+    email: kevin.flauzino@hotmail.com
+    affiliation: >-
+      LabIS(Laboratório de Informática e Sociedade) - UFRJ
+      (Universidade Federal do Rio de Janeiro)
+    orcid: 'https://orcid.org/0009-0005-2337-8449'
+repository-code: >-
+  https://github.com/KevinFlauzino/Prefeitos_Eleitos_no_Brasil_2024
+abstract: >-
+  Este código foi desenvolvido para capturar dados do site
+  de candidaturas de prefeitos de 2024 (versão 2.4.15)
+  (https://divulgacandcontas.tse.jus.br/divulga/#/home) e
+  foi projetado para funcionar com a quantidade de
+  municípios existentes no Brasil em fevereiro de 2025. O
+  projeto tem suas origens no código base criado pelos
+  alunos da disciplina Computadores e Sociedade (2024.2) na
+  UFRJ, ministrada pelo professor Luiz Arthur, coordenador
+  do LabIS (Laboratório de Informática e Sociedade).
+
+
+  O código inicial foi elaborado a pedido do professor
+  Eduardo Diniz da FGV para auxiliar sua pesquisa sobre
+  moedas sociais e bancos comunitários no estado do Rio de
+  Janeiro. Em 2025, o professor Eduardo Diniz desejou
+  expandir a pesquisa para abranger todo o Brasil, o que
+  levou à adaptação do código original para abranger o
+  território nacional.
+keywords:
+  - webscraping
+  - scraping
+  - UFRJ
+  - FGV
+  - prefeitos
+  - moeda social
+  - eleições
+  - eleição
+  - python
+  - pandas
+  - selenium
+  - economia solidária
+commit: Versão estável
+version: >-
+  https://github.com/KevinFlauzino/Prefeitos_Eleitos_no_Brasil_2024/tree/927cf6a986f28198fad97fd17228a6ecc883dacb
