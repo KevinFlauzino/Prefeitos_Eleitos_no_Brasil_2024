@@ -1,0 +1,133 @@
+openapi: 3.1.0
+info:
+  title: API mb-dados
+  version: 1.0.0
+  description: API autenticada para os dados da coleção UFRJ no Metabase.
+servers:
+  - url: https://dados.edinheiro.org
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      security: []
+      summary: Verifica a saúde do processo
+      responses:
+        "200":
+          description: Serviço disponível
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, version]
+                properties:
+                  status:
+                    type: string
+                    const: ok
+                  version:
+                    type: string
+  /v1/indicadores-mensais:
+    get:
+      summary: Retorna os indicadores mensais do banco
+      operationId: getIndicadoresMensais
+      parameters:
+        - $ref: "#/components/parameters/format"
+      responses:
+        "200": { $ref: "#/components/responses/data" }
+        "401": { $ref: "#/components/responses/unauthorized" }
+        "429": { $ref: "#/components/responses/rateLimit" }
+        "502": { $ref: "#/components/responses/upstreamFailure" }
+        "504": { $ref: "#/components/responses/upstreamTimeout" }
+  /v1/comercios:
+    get:
+      summary: Retorna comércios por setor e bairro
+      operationId: getComercios
+      parameters:
+        - $ref: "#/components/parameters/format"
+      responses:
+        "200": { $ref: "#/components/responses/data" }
+        "401": { $ref: "#/components/responses/unauthorized" }
+        "429": { $ref: "#/components/responses/rateLimit" }
+        "502": { $ref: "#/components/responses/upstreamFailure" }
+        "504": { $ref: "#/components/responses/upstreamTimeout" }
+  /v1/beneficios:
+    get:
+      summary: Retorna benefícios por programa e mês
+      operationId: getBeneficios
+      parameters:
+        - $ref: "#/components/parameters/format"
+      responses:
+        "200": { $ref: "#/components/responses/data" }
+        "401": { $ref: "#/components/responses/unauthorized" }
+        "429": { $ref: "#/components/responses/rateLimit" }
+        "502": { $ref: "#/components/responses/upstreamFailure" }
+        "504": { $ref: "#/components/responses/upstreamTimeout" }
+  /v1/usuarios:
+    get:
+      summary: Retorna dados demográficos de usuários por bairro
+      operationId: getUsuarios
+      parameters:
+        - $ref: "#/components/parameters/format"
+      responses:
+        "200": { $ref: "#/components/responses/data" }
+        "401": { $ref: "#/components/responses/unauthorized" }
+        "429": { $ref: "#/components/responses/rateLimit" }
+        "502": { $ref: "#/components/responses/upstreamFailure" }
+        "504": { $ref: "#/components/responses/upstreamTimeout" }
+  /v1/transacoes:
+    get:
+      summary: Retorna transações intraurbanas
+      operationId: getTransacoes
+      parameters:
+        - $ref: "#/components/parameters/format"
+      responses:
+        "200": { $ref: "#/components/responses/data" }
+        "401": { $ref: "#/components/responses/unauthorized" }
+        "429": { $ref: "#/components/responses/rateLimit" }
+        "502": { $ref: "#/components/responses/upstreamFailure" }
+        "504": { $ref: "#/components/responses/upstreamTimeout" }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    format:
+      name: format
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [json, csv, xlsx]
+        default: json
+  responses:
+    data:
+      description: Dados solicitados
+      headers:
+        X-Cache:
+          schema:
+            type: string
+            enum: [HIT, MISS, STALE]
+        X-Cache-Age:
+          schema:
+            type: integer
+        X-Data-Generated-At:
+          schema:
+            type: string
+            format: date-time
+        X-Request-Id:
+          schema:
+            type: string
+            format: uuid
+      content:
+        application/json: {}
+        text/csv: {}
+        application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: {}
+    unauthorized:
+      description: Token ausente ou inválido
+    rateLimit:
+      description: Limite de requisições excedido
+    upstreamFailure:
+      description: Falha ao consultar o Metabase
+    upstreamTimeout:
+      description: Timeout ao consultar o Metabase

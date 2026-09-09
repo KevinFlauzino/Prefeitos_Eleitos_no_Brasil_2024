@@ -1,0 +1,14 @@
+# Segredos — NUNCA commitar o token
+.env
+
+# Downloads gerados pelo explorador
+downloads/
+*.csv
+*.xlsx
+*.json.gz
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

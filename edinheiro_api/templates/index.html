@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eDinheiro · Explorador da API</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">₵</span>
+      <div>
+        <h1>Explorador da API eDinheiro</h1>
+        <p class="sub">Painel de testes e análise · <code>{{ base_url }}</code></p>
+      </div>
+    </div>
+    <div class="status-pills">
+      <span id="tokenPill" class="pill {{ 'ok' if token_configurado else 'bad' }}">
+        {{ 'Token carregado' if token_configurado else 'Sem token (.env)' }}
+      </span>
+      <span id="healthPill" class="pill neutral">Verificando saúde…</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar de endpoints -->
+    <aside class="sidebar">
+      <h2>Conjuntos de dados</h2>
+      <ul class="endpoint-list">
+        {% for chave, ep in endpoints.items() %}
+        <li>
+          <button class="endpoint" data-recurso="{{ chave }}">
+            <div class="ep-head">
+              <span class="ep-title">{{ ep.titulo }}</span>
+              {% if ep.grande %}<span class="badge big">{{ ep.tamanho }}</span>
+              {% else %}<span class="badge">{{ ep.tamanho }}</span>{% endif %}
+            </div>
+            <code class="ep-path">/v1/{{ chave }}</code>
+            <p class="ep-desc">{{ ep.descricao }}</p>
+          </button>
+        </li>
+        {% endfor %}
+      </ul>
+      <div class="hint">
+        <strong>Dica:</strong> a prévia lê só as primeiras linhas (via CSV em streaming),
+        então é rápida mesmo para <code>/v1/transacoes</code> (363 MB).
+      </div>
+    </aside>
+
+    <!-- Painel principal -->
+    <main class="content">
+      <section id="welcome" class="welcome">
+        <h2>Selecione um conjunto à esquerda</h2>
+        <p>Você poderá inspecionar as colunas, ver uma prévia dos dados, estatísticas
+           automáticas por coluna e gráficos rápidos — além de baixar o dataset completo
+           em JSON, CSV ou XLSX.</p>
+        <div class="rate-note">Limite da API: <strong>60 requisições/minuto</strong> · cache de 1 hora.</div>
+      </section>
+
+      <section id="panel" class="panel hidden">
+        <!-- Controles -->
+        <div class="controls">
+          <div class="ctrl-title">
+            <h2 id="panelTitle">—</h2>
+            <code id="panelPath"></code>
+          </div>
+          <div class="ctrl-actions">
+            <label>Linhas na prévia
+              <select id="limit">
+                <option value="100">100</option>
+                <option value="500" selected>500</option>
+                <option value="2000">2000</option>
+                <option value="10000">10000</option>
+              </select>
+            </label>
+            <button id="btnPreview" class="btn primary">Carregar prévia</button>
+            <div class="download-group">
+              <span>Baixar:</span>
+              <a id="dlJson" class="btn ghost" href="#" target="_blank" rel="noopener">JSON</a>
+              <a id="dlCsv" class="btn ghost" href="#" target="_blank" rel="noopener">CSV</a>
+              <a id="dlXlsx" class="btn ghost" href="#" target="_blank" rel="noopener">XLSX</a>
+            </div>
+          </div>
+        </div>
+
+        <div id="loader" class="loader hidden">
+          <div class="spinner"></div>
+          <span id="loaderText">Consultando a API…</span>
+        </div>
+
+        <div id="error" class="error hidden"></div>
+
+        <!-- Metadados da resposta -->
+        <div id="metaCards" class="meta-cards hidden"></div>
+
+        <!-- Abas -->
+        <div id="tabs" class="tabs hidden">
+          <button class="tab active" data-tab="dados">Dados</button>
+          <button class="tab" data-tab="colunas">Colunas &amp; estatísticas</button>
+          <button class="tab" data-tab="grafico">Gráfico</button>
+        </div>
+
+        <!-- Aba: dados -->
+        <div id="tab-dados" class="tab-panel">
+          <div class="table-info" id="tableInfo"></div>
+          <div class="table-wrap">
+            <table id="dataTable"></table>
+          </div>
+        </div>
+
+        <!-- Aba: colunas -->
+        <div id="tab-colunas" class="tab-panel hidden">
+          <div id="colsGrid" class="cols-grid"></div>
+        </div>
+
+        <!-- Aba: grafico -->
+        <div id="tab-grafico" class="tab-panel hidden">
+          <div class="chart-controls">
+            <label>Coluna
+              <select id="chartCol"></select>
+            </label>
+            <span class="chart-hint">Categóricas → contagem dos valores mais frequentes · Numéricas → distribuição.</span>
+          </div>
+          <canvas id="chart" width="900" height="420"></canvas>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

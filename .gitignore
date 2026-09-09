@@ -12,8 +12,6 @@ venv/
 .idea/
 .vscode/
 
-# Claude Code
-.claude/
 
 # Arquivos temporarios de download
 pdf/
@@ -23,3 +21,39 @@ Resultados/~$*
 
 # Arquivos temporarios do Office
 ~$*
+
+# Banco de dados gerado (298 MB, refeito por app/construir_bd.py)
+dados/*.db
+dados/*.db-journal
+dados/*.db-wal
+dados/*.db-shm
+
+# Saida intermediaria do OCR (refeita por app/ocr_planos.py)
+dados/ocr/
+
+# Documentos de trabalho, do relatorio e do artigo.
+# O repositorio publica o aplicativo e os dados que ele produz, nao os textos
+# academicos derivados deles.
+dados/*.docx
+dados/*.pdf
+dados/*.txt
+dados/ARTIGO_RASCUNHO.md
+dados/ESTADO_DO_TRABALHO.md
+dados/REVISAO_PENDENTE.md
+dados/cortes_aprovados.json
+dados/final_paragrafos.json
+# Contagens intermediarias de apuracoes antigas. Ficam fora do
+# repositorio para nao circularem numeros que a base ja superou;
+# os valores validos sao os do README, apurados do banco atual.
+dados/numeros_artigo.json
+dados/numeros_pos_ocr.json
+dados/baseline_pre_ocr.json
+dados/figuras/
+
+# Downloads temporarios do coletor de 2026
+PDFs_2026/_download/
+
+# Saida do empacotador (refeita por: python empacotar.py)
+build/
+dist/
+*.spec

@@ -1,54 +1,72 @@
-# This CITATION.cff file was generated with cffinit.
-# Visit https://bit.ly/cffinit to generate yours today!
-
 cff-version: 1.2.0
-title: Prefeitos_Eleitos_no_Brasil_2024
+title: Mapeador de Políticas Públicas Municipais
 message: >-
-  Se você usar este software, cite-o usando os metadados
-  deste arquivo.
+  Se você usar este software, cite-o usando os metadados deste arquivo.
 type: software
 authors:
   - given-names: Kevin
-    family-names: Flauzino
+    family-names: Flauzino do Nascimento
     email: kevin.flauzino@hotmail.com
     affiliation: >-
-      LabIS(Laboratório de Informática e Sociedade) - UFRJ
-      (Universidade Federal do Rio de Janeiro)
+      LabIS (Laboratório de Informática e Sociedade) - UFRJ (Universidade
+      Federal do Rio de Janeiro)
     orcid: 'https://orcid.org/0009-0005-2337-8449'
 repository-code: >-
   https://github.com/KevinFlauzino/Prefeitos_Eleitos_no_Brasil_2024
+version: 3.0.0
+date-released: '2026-09-09'
 abstract: >-
-  Este código foi desenvolvido para capturar dados do site
-  de candidaturas de prefeitos de 2024 (versão 2.4.15)
-  (https://divulgacandcontas.tse.jus.br/divulga/#/home) e
-  foi projetado para funcionar com a quantidade de
-  municípios existentes no Brasil em fevereiro de 2025. O
-  projeto tem suas origens no código base criado pelos
-  alunos da disciplina Computadores e Sociedade (2024.2) na
-  UFRJ, ministrada pelo professor Luiz Arthur, coordenador
-  do LabIS (Laboratório de Informática e Sociedade).
+  Aplicativo de busca sobre os planos de governo entregues ao Tribunal Superior
+  Eleitoral. Reúne em uma base pesquisável a proposta de governo dos prefeitos
+  eleitos no Brasil em 2024 e a dos candidatos a governador e a presidente que
+  registraram proposta em 2026, permitindo consultar por palavra-chave quais
+  municípios assumiram determinado compromisso de campanha e recuperar o trecho
+  literal de cada plano.
 
 
-  O código inicial foi elaborado a pedido do professor
-  Eduardo Diniz da FGV para auxiliar sua pesquisa sobre
-  moedas sociais e bancos comunitários no estado do Rio de
-  Janeiro. Em 2025, o professor Eduardo Diniz desejou
-  expandir a pesquisa para abranger todo o Brasil, o que
-  levou à adaptação do código original para abranger o
-  território nacional.
+  A base cobre 5.568 dos 5.569 municípios que elegem prefeito. Dos 5.468 planos
+  publicados, 99,9% são pesquisáveis por texto, parcela obtida após o
+  reconhecimento óptico dos documentos publicados como imagem escaneada.
+
+
+  O projeto tem origem no código base criado pelos alunos da disciplina
+  Computadores e Sociedade (2024.2) da UFRJ, ministrada pelo professor Luiz
+  Arthur, coordenador do LabIS, a pedido do professor Eduardo Diniz, da FGV
+  EAESP, para uma pesquisa sobre moedas sociais e bancos comunitários no estado
+  do Rio de Janeiro. Em 2025 a pesquisa foi ampliada para todo o território
+  nacional e o projeto foi reescrito como a ferramenta de consulta aqui
+  descrita.
 keywords:
   - webscraping
-  - scraping
   - UFRJ
   - FGV
   - prefeitos
   - moeda social
   - eleições
-  - eleição
+  - políticas públicas
   - python
-  - pandas
+  - sqlite
   - selenium
   - economia solidária
-commit: Versão estável
-version: >-
-  https://github.com/KevinFlauzino/Prefeitos_Eleitos_no_Brasil_2024/tree/927cf6a986f28198fad97fd17228a6ecc883dacb
+references:
+  - type: conference-paper
+    title: >-
+      Moedas municipais, transferência de renda e economia solidária nas
+      propostas dos prefeitos eleitos em 2024
+    authors:
+      - given-names: Eduardo H.
+        family-names: Diniz
+      - given-names: Manuela
+        family-names: Lorenzo
+      - given-names: Kevin N.
+        family-names: Flauzino
+      - given-names: Luiz A. S.
+        family-names: Faria
+    collection-title: >-
+      Anais do 24º Congresso da Rede Mundial da Renda Básica
+    conference:
+      name: 24º Congresso da Rede Mundial da Renda Básica (BIEN 2025)
+      city: Maricá
+      country: BR
+    year: 2025
+    notes: Trabalho que utilizou a base de dados gerada por este software.
